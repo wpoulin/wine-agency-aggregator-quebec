@@ -13,7 +13,7 @@ import { PdfModule } from './infrastructure/pdf/pdf.module';
 import { ScrapingModule } from './infrastructure/scraping/scraping.module';
 
 // Agencies — adding a new one is one import.
-import { SaqModule } from './agencies/saq/saq.module';
+import { LaQvModule } from './agencies/la-qv/la-qv.module';
 
 @Module({
   imports: [
@@ -39,7 +39,7 @@ import { SaqModule } from './agencies/saq/saq.module';
     ApiModule,
 
     // Agencies
-    SaqModule,
+    LaQvModule,
   ],
 })
 export class AppModule {}

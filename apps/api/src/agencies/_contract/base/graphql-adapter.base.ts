@@ -14,7 +14,7 @@ export abstract class GraphqlAdapterBase<Raw> implements AgencyAdapter<Raw> {
 
   protected abstract readonly endpoint: string;
 
-  protected constructor(protected readonly http: HttpService) {}
+  constructor(protected readonly http: HttpService) {}
 
   protected async query<T>(
     query: string,

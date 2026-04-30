@@ -14,6 +14,7 @@ import { ScrapingModule } from './infrastructure/scraping/scraping.module';
 
 // Agencies — adding a new one is one import.
 import { LaQvModule } from './agencies/la-qv/la-qv.module';
+import { Les2RaisinsModule } from './agencies/les-2-raisins/les-2-raisins.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { LaQvModule } from './agencies/la-qv/la-qv.module';
 
     // Agencies
     LaQvModule,
+    Les2RaisinsModule,
   ],
 })
 export class AppModule {}

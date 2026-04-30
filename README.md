@@ -1,4 +1,4 @@
-# wine-agency-aggregator-quebec
+# Wine Agency Aggregator Quebec
 
 A local web app that aggregates and normalizes wine inventory from
 Quebec-licensed sellers — SAQ and private agencies. Each agency exposes data

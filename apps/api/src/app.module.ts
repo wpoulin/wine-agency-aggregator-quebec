@@ -13,6 +13,7 @@ import { PdfModule } from './infrastructure/pdf/pdf.module';
 import { ScrapingModule } from './infrastructure/scraping/scraping.module';
 
 // Agencies — adding a new one is one import.
+import { AboireDeboutModule } from './agencies/a-boire-debout/a-boire-debout.module';
 import { LaQvModule } from './agencies/la-qv/la-qv.module';
 import { Les2RaisinsModule } from './agencies/les-2-raisins/les-2-raisins.module';
 
@@ -40,6 +41,7 @@ import { Les2RaisinsModule } from './agencies/les-2-raisins/les-2-raisins.module
     ApiModule,
 
     // Agencies
+    AboireDeboutModule,
     LaQvModule,
     Les2RaisinsModule,
   ],

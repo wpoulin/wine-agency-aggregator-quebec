@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { type NormalizedWine, WineColor } from '@wine/types';
 
-import { normalizeColor, parseVintage, parseVolumeMl } from '../../core/normalization';
+import { normalizeColor, parseVintage, parseVolumeMl, stripHtml } from '../../core/normalization';
 import { Agency } from '../_contract/agency.decorator';
 import type { FetchContext } from '../_contract/agency-adapter.interface';
 import { RestAdapterBase } from '../_contract/base/rest-adapter.base';
@@ -201,31 +201,6 @@ function parseBodyHtml(html: string | undefined): ParsedBody {
     grapes: parseGrapesLine(text),
     format: matchLabel(text, /format/i),
   };
-}
-
-/**
- * Lightweight HTML→text: turn block-level closes into newlines so each
- * labelled line stays on its own row, drop remaining tags, decode the
- * handful of entities Shopify commonly emits. Matches l2r's approach but
- * trimmed to what À Boire Debout actually ships — no need for `cheerio`.
- */
-function stripHtml(html: string): string {
-  const withBreaks = html
-    .replace(/<\s*br\s*\/?\s*>/gi, '\n')
-    .replace(/<\s*\/\s*(p|div|li|h[1-6])\s*>/gi, '\n');
-  const noTags = withBreaks.replace(/<[^>]*>/g, '');
-  const decoded = noTags
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number.parseInt(n, 10)));
-  return decoded
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\s*\n\s*/g, '\n')
-    .trim();
 }
 
 /**

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { type NormalizedWine, WineColor } from '@wine/types';
 
-import { parseVintage, parseVolumeMl } from '../../core/normalization';
+import { parseVintage, parseVolumeMl, stripHtml } from '../../core/normalization';
 import { Agency } from '../_contract/agency.decorator';
 import type { FetchContext } from '../_contract/agency-adapter.interface';
 import { RestAdapterBase } from '../_contract/base/rest-adapter.base';
@@ -165,34 +165,6 @@ export class Les2RaisinsAdapter extends RestAdapterBase<Les2RaisinsRaw> {
       },
     };
   }
-}
-
-/**
- * Strip HTML tags and decode the handful of entities WooCommerce commonly
- * emits in `short_description` (`&amp;`, `&nbsp;`, `&#39;`, `&quot;`,
- * `&lt;`/`&gt;`). Block-level closures and `<br>` are converted to newlines
- * so downstream parsers can reason about each paragraph independently —
- * region/appellation/cépage live on different lines and must not bleed into
- * each other. We deliberately avoid pulling in `cheerio` here.
- */
-function stripHtml(html: string | null | undefined): string {
-  if (!html) return '';
-  const withBreaks = html
-    .replace(/<\s*br\s*\/?\s*>/gi, '\n')
-    .replace(/<\s*\/\s*(p|div|li|tr|h[1-6])\s*>/gi, '\n');
-  const noTags = withBreaks.replace(/<[^>]*>/g, '');
-  const decoded = noTags
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number.parseInt(n, 10)));
-  return decoded
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\s*\n\s*/g, '\n')
-    .trim();
 }
 
 function pickCountry(categories: Taxonomy[]): string | null {

@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import type { NormalizedWine } from '@wine/types';
 
 import { HttpService } from '../../../infrastructure/http/http.service';
@@ -5,7 +6,9 @@ import type { AgencyAdapter, AgencySourceType, FetchContext } from '../agency-ad
 
 /**
  * Convenience base for GraphQL-backed adapters. Provides a `query()` helper
- * that POSTs to a configured endpoint.
+ * that POSTs to a configured endpoint. `HttpService` is property-injected so
+ * subclasses don't need a constructor — just set `endpoint`, `id`,
+ * `displayName`, and implement `fetch` + `normalize`.
  */
 export abstract class GraphqlAdapterBase<Raw> implements AgencyAdapter<Raw> {
   abstract readonly id: string;
@@ -14,7 +17,7 @@ export abstract class GraphqlAdapterBase<Raw> implements AgencyAdapter<Raw> {
 
   protected abstract readonly endpoint: string;
 
-  constructor(protected readonly http: HttpService) {}
+  @Inject(HttpService) protected readonly http!: HttpService;
 
   protected async query<T>(
     query: string,

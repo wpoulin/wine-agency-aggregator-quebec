@@ -48,7 +48,7 @@ function makeCtx(signal: AbortSignal = new AbortController().signal): FetchConte
 describe('Les2RaisinsAdapter', () => {
   describe('normalize', () => {
     it('maps a full Store API record across every NormalizedWine field', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw());
 
       expect(out).toEqual({
@@ -76,7 +76,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('converts price from minor units using currency_minor_unit', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({ prices: { price: '14750', currency_code: 'CAD', currency_minor_unit: 2 } }),
       );
@@ -84,31 +84,31 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('defaults currency_minor_unit to 2 when omitted', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ prices: { price: '7000', currency_code: 'CAD' } }));
       expect(out.price).toEqual({ amount: 70, currency: 'CAD' });
     });
 
     it('reads vintage from the pa_vintage attribute', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ name: 'Querce Bettina Il Campone' }));
       expect(out.vintage).toBe(2022);
     });
 
     it('falls back to vintage parsed from title when no attribute', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ attributes: [] }));
       expect(out.vintage).toBe(2022);
     });
 
     it('returns null vintage when neither attribute nor title carries a year', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ name: 'Querce Bettina Il Campone', attributes: [] }));
       expect(out.vintage).toBe(null);
     });
 
     it('returns null producer when no tag is a substring of the title', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({
           name: 'Some Random Wine 2022',
@@ -119,7 +119,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('picks the longest substring-matching tag as producer', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({
           name: 'Domaine de la Côte Bloomfield Pinot Noir 2021',
@@ -134,7 +134,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('detects Magnum in the title and emits 1500ml', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({ name: 'Lucie Thiéblemont Chablis Premier Cru (Magnum) 2023' }),
       );
@@ -142,7 +142,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('maps Vins rouges → Red, combined-color → White, unknown → Other', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const red = adapter.normalize(makeRaw());
       const white = adapter.normalize(
         makeRaw({
@@ -163,7 +163,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('returns null country when no category matches the known-countries set', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({
           categories: [
@@ -176,19 +176,19 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('falls back agencySku to id when sku is empty', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ sku: '' }));
       expect(out.agencySku).toBe('13985');
     });
 
     it('returns null imageUrl when images array is empty', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ images: [] }));
       expect(out.imageUrl).toBe(null);
     });
 
     it('reflects is_in_stock as the available flag', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const inStock = adapter.normalize(makeRaw({ is_in_stock: true }));
       const outOfStock = adapter.normalize(makeRaw({ is_in_stock: false }));
       expect(inStock.available).toBe(true);
@@ -199,7 +199,7 @@ describe('Les2RaisinsAdapter', () => {
     // unified filters on country / color / grapes work across agencies.
 
     it('lowercases grapes and strips parenthetical percentage annotations', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({
           short_description: '<p>Cépages: Sangiovese Grosso (60%), Merlot (40%)</p>',
@@ -209,7 +209,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('strips bare percentage suffixes/prefixes and splits on " et "', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({
           short_description:
@@ -220,13 +220,13 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('emits country in French ("Italie") to match the La QV convention', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw());
       expect(out.country).toBe('Italie');
     });
 
     it('strips HTML tags and entities from short_description before parsing', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(
         makeRaw({
           short_description: '<p>Italie,&nbsp;Toscane</p><p>Cépage: Sangiovese &amp; Merlot</p>',
@@ -237,7 +237,7 @@ describe('Les2RaisinsAdapter', () => {
     });
 
     it('collapses an empty short_description to null region/appellation and empty grapes', () => {
-      const adapter = new Les2RaisinsAdapter({} as HttpService);
+      const adapter = new Les2RaisinsAdapter();
       const out = adapter.normalize(makeRaw({ short_description: '' }));
       expect(out.region).toBe(null);
       expect(out.appellation).toBe(null);
@@ -271,7 +271,8 @@ describe('Les2RaisinsAdapter', () => {
         },
       };
 
-      const adapter = new Les2RaisinsAdapter(http as HttpService);
+      const adapter = new Les2RaisinsAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
 
       // 100 instock page1 + 1 instock page2 + 1 outofstock + 1 onbackorder.
@@ -296,10 +297,16 @@ describe('Les2RaisinsAdapter', () => {
           return [] as unknown as T;
         },
       };
-      const adapter = new Les2RaisinsAdapter(http as HttpService);
+      const adapter = new Les2RaisinsAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
+
       expect(result).toHaveLength(1);
-      expect(result[0]!.id).toBe(42);
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: 42,
+        }),
+      ]);
     });
 
     it('honours an aborted signal between pages', async () => {
@@ -317,7 +324,8 @@ describe('Les2RaisinsAdapter', () => {
         },
       };
 
-      const adapter = new Les2RaisinsAdapter(http as HttpService);
+      const adapter = new Les2RaisinsAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx(ctrl.signal));
 
       expect(pageCount).toBe(1);
@@ -333,7 +341,8 @@ describe('Les2RaisinsAdapter', () => {
         },
       };
 
-      const adapter = new Les2RaisinsAdapter(http as HttpService);
+      const adapter = new Les2RaisinsAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
 
       // One short page per status × 3 statuses.

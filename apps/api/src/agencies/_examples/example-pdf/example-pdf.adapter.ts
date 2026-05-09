@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { type NormalizedWine, WineColor } from '@wine/types';
 
+import { normalizeColor, parsePriceAmount, parseVintage } from '../../../core/normalization';
 import { Agency } from '../../_contract/agency.decorator';
 import { PdfAdapterBase } from '../../_contract/base/pdf-adapter.base';
-import { HttpService } from '../../../infrastructure/http/http.service';
-import { PdfService } from '../../../infrastructure/pdf/pdf.service';
-import { normalizeColor, parsePriceAmount, parseVintage } from '../../../core/normalization';
 
 interface PdfRow {
   sku: string;
@@ -19,10 +17,6 @@ interface PdfRow {
 export class ExamplePdfAdapter extends PdfAdapterBase<PdfRow> {
   readonly id = 'example-pdf';
   readonly displayName = 'Example PDF Price-list Agency';
-
-  constructor(http: HttpService, pdf: PdfService) {
-    super(http, pdf);
-  }
 
   protected pdfUrl(): string {
     return 'https://example.invalid/pricelist.pdf';
@@ -48,6 +42,7 @@ export class ExamplePdfAdapter extends PdfAdapterBase<PdfRow> {
   }
 
   normalize(raw: PdfRow): NormalizedWine {
+    const priceAmount = parsePriceAmount(raw.priceRaw);
     return {
       agencyId: this.id,
       agencySku: raw.sku,
@@ -61,10 +56,7 @@ export class ExamplePdfAdapter extends PdfAdapterBase<PdfRow> {
       grapes: [],
       volumeMl: 750,
       alcoholPct: null,
-      price:
-        parsePriceAmount(raw.priceRaw) != null
-          ? { amount: parsePriceAmount(raw.priceRaw)!, currency: 'CAD' }
-          : null,
+      price: priceAmount != null ? { amount: priceAmount, currency: 'CAD' } : null,
       available: true,
       sourceUrl: null,
       imageUrl: null,

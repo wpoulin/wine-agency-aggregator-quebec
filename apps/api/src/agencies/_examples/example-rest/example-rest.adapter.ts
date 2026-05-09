@@ -4,7 +4,6 @@ import { type NormalizedWine, WineColor } from '@wine/types';
 import { Agency } from '../../_contract/agency.decorator';
 import type { FetchContext } from '../../_contract/agency-adapter.interface';
 import { RestAdapterBase } from '../../_contract/base/rest-adapter.base';
-import { HttpService } from '../../../infrastructure/http/http.service';
 
 interface ExampleRestRaw {
   sku: string;
@@ -28,10 +27,6 @@ export class ExampleRestAdapter extends RestAdapterBase<ExampleRestRaw> {
   readonly displayName = 'Example REST Agency';
 
   private readonly endpoint = 'https://example.invalid/api/wines';
-
-  constructor(http: HttpService) {
-    super(http);
-  }
 
   async fetch(_ctx: FetchContext): Promise<ExampleRestRaw[]> {
     return this.http.json<ExampleRestRaw[]>(this.endpoint);

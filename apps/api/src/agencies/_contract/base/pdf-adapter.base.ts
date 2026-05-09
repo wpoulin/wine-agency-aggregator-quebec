@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import type { NormalizedWine } from '@wine/types';
 
 import { HttpService } from '../../../infrastructure/http/http.service';
@@ -6,17 +7,17 @@ import type { AgencyAdapter, AgencySourceType, FetchContext } from '../agency-ad
 
 /**
  * Base class for adapters that ingest a published PDF price list. Subclasses
- * implement `pdfUrl()` (or override `fetch()` if multiple PDFs) and `parsePdf()`.
+ * implement `pdfUrl()` (or override `fetch()` if multiple PDFs) and
+ * `parsePdf()`. Dependencies are property-injected so subclasses don't need
+ * a constructor.
  */
 export abstract class PdfAdapterBase<Raw> implements AgencyAdapter<Raw> {
   abstract readonly id: string;
   abstract readonly displayName: string;
   readonly sourceType: AgencySourceType = 'pdf';
 
-  protected constructor(
-    protected readonly http: HttpService,
-    protected readonly pdf: PdfService,
-  ) {}
+  @Inject(HttpService) protected readonly http!: HttpService;
+  @Inject(PdfService) protected readonly pdf!: PdfService;
 
   /** URL of the PDF to ingest. Default `fetch()` downloads + parses it. */
   protected abstract pdfUrl(): string | Promise<string>;

@@ -2,13 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { type NormalizedWine, WineColor } from '@wine/types';
 
 import { parseVintage, parseVolumeMl } from '../../core/normalization';
-// HttpService is imported as a runtime value (not `import type`) so that
-// NestJS's `emitDecoratorMetadata` records it in the constructor's
-// `design:paramtypes` for DI to resolve. La QV does the same — Biome's
-// `useImportType` autofix is a false positive here.
-import { HttpService } from '../../infrastructure/http/http.service';
-import type { FetchContext } from '../_contract/agency-adapter.interface';
 import { Agency } from '../_contract/agency.decorator';
+import type { FetchContext } from '../_contract/agency-adapter.interface';
 import { RestAdapterBase } from '../_contract/base/rest-adapter.base';
 
 interface Term {
@@ -110,11 +105,6 @@ const COLOR_BY_CATEGORY: Record<string, WineColor> = {
 export class Les2RaisinsAdapter extends RestAdapterBase<Les2RaisinsRaw> {
   readonly id = 'les-2-raisins';
   readonly displayName = 'Les 2 Raisins';
-
-  // biome-ignore lint/complexity/noUselessConstructor: required so Nest DI sees the constructor's HttpService param
-  constructor(http: HttpService) {
-    super(http);
-  }
 
   async fetch(ctx: FetchContext): Promise<Les2RaisinsRaw[]> {
     const seen = new Set<number>();

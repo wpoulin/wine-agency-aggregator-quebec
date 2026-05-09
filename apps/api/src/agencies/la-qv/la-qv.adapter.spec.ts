@@ -1,8 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { WineColor } from '@wine/types';
-
-import type { FetchContext } from '../_contract/agency-adapter.interface';
 import type { HttpService } from '../../infrastructure/http/http.service';
+import type { FetchContext } from '../_contract/agency-adapter.interface';
 import { LaQvAdapter, type LaQvRaw } from './la-qv.adapter';
 
 const FAKE_TOKEN = 'e05b9057651913ff021a4247e25c3a6f';
@@ -42,7 +41,7 @@ function makeCtx(signal: AbortSignal = new AbortController().signal): FetchConte
 describe('LaQvAdapter', () => {
   describe('normalize', () => {
     it('maps a full Storefront record with metafields', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(makeRaw());
 
       expect(out).toEqual({
@@ -74,7 +73,7 @@ describe('LaQvAdapter', () => {
     });
 
     it('falls back to variant price when price_individual metafield is missing', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({
           metafields: [
@@ -88,7 +87,7 @@ describe('LaQvAdapter', () => {
     });
 
     it('uses price_individual when variant price is 0', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({
           priceRange: { minVariantPrice: { amount: '0', currencyCode: 'CAD' } },
@@ -98,7 +97,7 @@ describe('LaQvAdapter', () => {
     });
 
     it('returns a zero variant price as last resort when no metafield', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({
           metafields: [],
@@ -109,13 +108,13 @@ describe('LaQvAdapter', () => {
     });
 
     it('falls back to year metafield when title has no vintage', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(makeRaw({ title: 'Esino, Rosso' }));
       expect(out.vintage).toBe(2016);
     });
 
     it('treats missing available metafield as variant availableForSale', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({
           metafields: [],
@@ -126,7 +125,7 @@ describe('LaQvAdapter', () => {
     });
 
     it('marks unavailable when available metafield is "Épuisé" and variant is unavailable', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({
           metafields: [{ key: 'available', value: 'Épuisé' }],
@@ -137,7 +136,7 @@ describe('LaQvAdapter', () => {
     });
 
     it('falls back to handle when variant has no SKU', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({ variants: { nodes: [{ sku: null, availableForSale: true, title: '750ml' }] } }),
       );
@@ -145,7 +144,7 @@ describe('LaQvAdapter', () => {
     });
 
     it('survives null-only metafields array', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(makeRaw({ metafields: [null, null, null] }));
       expect(out.grapes).toEqual([]);
       expect(out.raw).toEqual({
@@ -159,14 +158,14 @@ describe('LaQvAdapter', () => {
     });
 
     it('returns null country/region when tags do not match the pattern', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(makeRaw({ tags: [] }));
       expect(out.country).toBe(null);
       expect(out.region).toBe(null);
     });
 
     it('falls back to 750ml when neither variant nor title declare a volume', () => {
-      const adapter = new LaQvAdapter({} as HttpService);
+      const adapter = new LaQvAdapter();
       const out = adapter.normalize(
         makeRaw({
           title: 'Esino Rosso',
@@ -187,7 +186,10 @@ describe('LaQvAdapter', () => {
           tokenCalls.push(url);
           return FAKE_THEME_JS;
         },
-        async json<T>(_url: string, opts?: { headers?: Record<string, string>; body?: string }): Promise<T> {
+        async json<T>(
+          _url: string,
+          opts?: { headers?: Record<string, string>; body?: string },
+        ): Promise<T> {
           queryCalls.push({
             headers: opts?.headers ?? {},
             body: typeof opts?.body === 'string' ? opts.body : '',
@@ -214,7 +216,8 @@ describe('LaQvAdapter', () => {
         },
       };
 
-      const adapter = new LaQvAdapter(http as HttpService);
+      const adapter = new LaQvAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
 
       expect(tokenCalls).toEqual(['https://laqv.ca/cdn/shop/t/2/assets/app.js']);
@@ -223,7 +226,7 @@ describe('LaQvAdapter', () => {
       for (const call of queryCalls) {
         expect(call.headers['X-Shopify-Storefront-Access-Token']).toBe(FAKE_TOKEN);
       }
-      expect(queryCalls[1]!.body).toContain('CURSOR_1');
+      expect(queryCalls[1]?.body).toContain('CURSOR_1');
     });
 
     it('throws when the theme bundle does not contain a token', async () => {
@@ -235,7 +238,8 @@ describe('LaQvAdapter', () => {
           throw new Error('should not be called');
         },
       };
-      const adapter = new LaQvAdapter(http as HttpService);
+      const adapter = new LaQvAdapter();
+      Object.assign(adapter, { http });
       await expect(adapter.fetch(makeCtx())).rejects.toThrow(/storefront access token not found/i);
     });
 
@@ -261,7 +265,8 @@ describe('LaQvAdapter', () => {
         },
       };
 
-      const adapter = new LaQvAdapter(http as HttpService);
+      const adapter = new LaQvAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx(ctrl.signal));
 
       expect(queryCount).toBe(1);

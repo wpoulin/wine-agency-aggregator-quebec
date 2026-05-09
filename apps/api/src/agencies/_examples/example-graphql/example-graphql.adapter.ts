@@ -4,7 +4,6 @@ import { type NormalizedWine, WineColor } from '@wine/types';
 import { Agency } from '../../_contract/agency.decorator';
 import type { FetchContext } from '../../_contract/agency-adapter.interface';
 import { GraphqlAdapterBase } from '../../_contract/base/graphql-adapter.base';
-import { HttpService } from '../../../infrastructure/http/http.service';
 
 interface GqlWine {
   id: string;
@@ -22,13 +21,9 @@ export class ExampleGraphqlAdapter extends GraphqlAdapterBase<GqlWine> {
 
   protected readonly endpoint = 'https://example.invalid/graphql';
 
-  constructor(http: HttpService) {
-    super(http);
-  }
-
   async fetch(_ctx: FetchContext): Promise<GqlWine[]> {
     const data = await this.query<{ wines: GqlWine[] }>(
-      `query AllWines { wines { id name vintage color priceCad } }`,
+      'query AllWines { wines { id name vintage color priceCad } }',
     );
     return data.wines;
   }

@@ -34,7 +34,7 @@ function makeCtx(signal: AbortSignal = new AbortController().signal): FetchConte
 describe('AboireDeboutAdapter', () => {
   describe('normalize', () => {
     it('maps a full Shopify record across every NormalizedWine field', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw());
 
       expect(out).toEqual({
@@ -69,28 +69,28 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('strips the trailing " - <price>$" from the title and pulls vintage', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw({ title: 'Mezzosangue 2023 - 38.00$' }));
       expect(out.name).toBe('Mezzosangue');
       expect(out.vintage).toBe(2023);
     });
 
     it('handles titles without a vintage', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw({ title: 'Roc Cab - 39.00$' }));
       expect(out.name).toBe('Roc Cab');
       expect(out.vintage).toBe(null);
     });
 
     it('handles titles without the price suffix', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw({ title: 'Calvados Lelouvier' }));
       expect(out.name).toBe('Calvados Lelouvier');
       expect(out.vintage).toBe(null);
     });
 
     it('extracts the bottle size from "<n> x <volume>" format tags, ignoring pack count', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       expect(
         adapter.normalize(makeRaw({ tags: ['Format_3 x 1500 ml', 'Pays_France'] })).volumeMl,
       ).toBe(1500);
@@ -101,7 +101,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('returns null volumeMl when no Format_ tag is present and body_html has no format line', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({ tags: ['Pays_France', 'Couleur_Rouge'], body_html: '' }),
       );
@@ -109,7 +109,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('falls back to body_html "Format : ..." when no Format_ tag is present', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({
           tags: ['Pays_France', 'Couleur_Rouge'],
@@ -120,7 +120,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('prefers Format_ tag over body_html format', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({
           tags: ['Format_6 x 750 ml'],
@@ -131,7 +131,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('maps Couleur tags via normalizeColor', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const red = adapter.normalize(makeRaw({ tags: ['Couleur_Rouge'] }));
       const rose = adapter.normalize(makeRaw({ tags: ['Couleur_Rosé'] }));
       const orange = adapter.normalize(makeRaw({ tags: ['Couleur_Orange'] }));
@@ -143,7 +143,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('prefers Producteur_ tag over the vendor field', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({
           vendor: 'Wrong Vendor, Fr',
@@ -154,7 +154,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('falls back to vendor with the trailing country code stripped', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({ vendor: 'Calalta, It', tags: ['Pays_Italie', 'Couleur_Rouge'] }),
       );
@@ -162,7 +162,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('uses variant.sku when provided, falls back to product id', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const withSku = adapter.normalize(
         makeRaw({ variants: [{ sku: 'ABD-001', price: '36.48', available: true }] }),
       );
@@ -172,7 +172,7 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('reflects variant.available as the available flag', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({ variants: [{ sku: null, price: '36.48', available: false }] }),
       );
@@ -180,26 +180,26 @@ describe('AboireDeboutAdapter', () => {
     });
 
     it('builds sourceUrl from the handle', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw({ handle: 'mezzosangue-2023-38-00' }));
       expect(out.sourceUrl).toBe('https://aboiredebout.com/products/mezzosangue-2023-38-00');
     });
 
     it('returns null imageUrl when images array is empty', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw({ images: [] }));
       expect(out.imageUrl).toBe(null);
     });
 
     it('returns null price/false available when variants array is empty', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(makeRaw({ variants: [] }));
       expect(out.price).toBe(null);
       expect(out.available).toBe(false);
     });
 
     it('returns null price (rather than NaN) when variant.price is unparseable', () => {
-      const adapter = new AboireDeboutAdapter({} as HttpService);
+      const adapter = new AboireDeboutAdapter();
       const out = adapter.normalize(
         makeRaw({ variants: [{ sku: null, price: '', available: true }] }),
       );
@@ -208,13 +208,13 @@ describe('AboireDeboutAdapter', () => {
 
     describe('grapes (from body_html "Cépage : ..." line)', () => {
       it('parses a single grape', () => {
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         const out = adapter.normalize(makeRaw({ body_html: '<h3>Cépage : Riesling</h3>' }));
         expect(out.grapes).toEqual(['riesling']);
       });
 
       it('splits on the spaced dash À Boire Debout uses ("Pinot Noir - Dornfelder")', () => {
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         const out = adapter.normalize(
           makeRaw({ body_html: '<h3>Cépage : Pinot Noir - Dornfelder</h3>' }),
         );
@@ -225,7 +225,7 @@ describe('AboireDeboutAdapter', () => {
         // Real example from the catalog: `Cépage : Riesling - Saint-Laurent`.
         // Saint-Laurent is a single Austrian/Czech red grape — its hyphen
         // must survive while the spaced dash between Riesling and it splits.
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         const out = adapter.normalize(
           makeRaw({
             body_html: '<h3>Cépage : Riesling - Saint-Laurent</h3>\n<p>Format : 1 litre</p>',
@@ -235,7 +235,7 @@ describe('AboireDeboutAdapter', () => {
       });
 
       it('splits on commas, slashes, ampersands, and " et "', () => {
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         expect(
           adapter.normalize(makeRaw({ body_html: '<p>Cépage : Sangiovese, Canaiolo</p>' })).grapes,
         ).toEqual(['sangiovese', 'canaiolo']);
@@ -254,7 +254,7 @@ describe('AboireDeboutAdapter', () => {
       it('keeps apostrophes inside grape names ("Pineau d\'Aunis") when comma-splitting', () => {
         // Real example: `Cépage : Grolleau, Gamay, Pineau d'Aunis`. The
         // apostrophe must survive — only commas/etc. split.
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         const out = adapter.normalize(
           makeRaw({ body_html: "<h3>Cépage : Grolleau, Gamay, Pineau d'Aunis</h3>" }),
         );
@@ -262,13 +262,13 @@ describe('AboireDeboutAdapter', () => {
       });
 
       it('accepts "Cepage" without the accent', () => {
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         const out = adapter.normalize(makeRaw({ body_html: '<h3>Cepage : Nebbiolo</h3>' }));
         expect(out.grapes).toEqual(['nebbiolo']);
       });
 
       it('returns [] when body_html is empty or has no Cépage line', () => {
-        const adapter = new AboireDeboutAdapter({} as HttpService);
+        const adapter = new AboireDeboutAdapter();
         expect(adapter.normalize(makeRaw({ body_html: '' })).grapes).toEqual([]);
         expect(
           adapter.normalize(makeRaw({ body_html: '<p>Just some prose, no labels.</p>' })).grapes,
@@ -276,15 +276,18 @@ describe('AboireDeboutAdapter', () => {
       });
     });
 
-    it.each(['Calvados', 'Cidre', 'Hydromel', 'Liqueur', 'Vermouth'])(
-      'throws (and is counted as a skip) for non-wine product_type "%s"',
-      (productType) => {
-        const adapter = new AboireDeboutAdapter({} as HttpService);
-        expect(() => adapter.normalize(makeRaw({ product_type: productType }))).toThrow(
-          /non-wine product_type/,
-        );
-      },
-    );
+    it.each([
+      'Calvados',
+      'Cidre',
+      'Hydromel',
+      'Liqueur',
+      'Vermouth',
+    ])('throws (and is counted as a skip) for non-wine product_type "%s"', (productType) => {
+      const adapter = new AboireDeboutAdapter();
+      expect(() => adapter.normalize(makeRaw({ product_type: productType }))).toThrow(
+        /non-wine product_type/,
+      );
+    });
   });
 
   describe('fetch', () => {
@@ -304,7 +307,8 @@ describe('AboireDeboutAdapter', () => {
           return { products: [] } as unknown as T;
         },
       };
-      const adapter = new AboireDeboutAdapter(http as HttpService);
+      const adapter = new AboireDeboutAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
 
       expect(result).toHaveLength(251);
@@ -332,7 +336,8 @@ describe('AboireDeboutAdapter', () => {
           } as unknown as T;
         },
       };
-      const adapter = new AboireDeboutAdapter(http as HttpService);
+      const adapter = new AboireDeboutAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
       expect(result.map((p) => p.id)).toEqual([1, 2, 3, 4, 5, 6]);
     });
@@ -347,7 +352,8 @@ describe('AboireDeboutAdapter', () => {
           } as unknown as T;
         },
       };
-      const adapter = new AboireDeboutAdapter(http as HttpService);
+      const adapter = new AboireDeboutAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx());
       expect(pageCount).toBe(10);
       expect(result).toHaveLength(10 * 250);
@@ -365,7 +371,8 @@ describe('AboireDeboutAdapter', () => {
           } as unknown as T;
         },
       };
-      const adapter = new AboireDeboutAdapter(http as HttpService);
+      const adapter = new AboireDeboutAdapter();
+      Object.assign(adapter, { http });
       const result = await adapter.fetch(makeCtx(ctrl.signal));
       expect(pageCount).toBe(1);
       expect(result).toHaveLength(250);

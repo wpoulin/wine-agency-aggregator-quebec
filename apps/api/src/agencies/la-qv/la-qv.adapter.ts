@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import type { NormalizedWine } from '@wine/types';
 
+import { normalizeColor, parseVintage, parseVolumeMl } from '../../core/normalization';
 import { Agency } from '../_contract/agency.decorator';
 import type { FetchContext } from '../_contract/agency-adapter.interface';
 import { GraphqlAdapterBase } from '../_contract/base/graphql-adapter.base';
-import { normalizeColor, parseVintage, parseVolumeMl } from '../../core/normalization';
-import { HttpService } from '../../infrastructure/http/http.service';
 
 interface Metafield {
   key: string;
@@ -95,11 +94,6 @@ export class LaQvAdapter extends GraphqlAdapterBase<LaQvRaw> {
 
   protected readonly endpoint = STOREFRONT_ENDPOINT;
 
-  // biome-ignore lint/complexity/noUselessConstructor: required so Nest DI sees the constructor's HttpService param
-  constructor(http: HttpService) {
-    super(http);
-  }
-
   async fetch(ctx: FetchContext): Promise<LaQvRaw[]> {
     const token = await this.resolveAccessToken(ctx);
     const headers = { 'X-Shopify-Storefront-Access-Token': token };
@@ -134,12 +128,12 @@ export class LaQvAdapter extends GraphqlAdapterBase<LaQvRaw> {
    */
   private async resolveAccessToken(ctx: FetchContext): Promise<string> {
     const js = await this.http.text(THEME_BUNDLE_URL, { timeoutMs: 30_000 });
-    const match = js.match(TOKEN_RE);
-    if (!match) {
+    const token = js.match(TOKEN_RE)?.[1];
+    if (!token) {
       ctx.logger.error(`Could not extract Storefront token from ${THEME_BUNDLE_URL}`);
       throw new Error('LaQv: storefront access token not found in theme bundle');
     }
-    return match[1]!;
+    return token;
   }
 
   normalize(raw: LaQvRaw): NormalizedWine {
@@ -157,7 +151,8 @@ export class LaQvAdapter extends GraphqlAdapterBase<LaQvRaw> {
       name: raw.title,
       producer: raw.vendor?.trim() || null,
       vintage:
-        parseVintage(raw.title) ?? (yearFromMeta && Number.isFinite(yearFromMeta) ? yearFromMeta : null),
+        parseVintage(raw.title) ??
+        (yearFromMeta && Number.isFinite(yearFromMeta) ? yearFromMeta : null),
       color: normalizeColor(raw.productType ?? ''),
       country,
       region,

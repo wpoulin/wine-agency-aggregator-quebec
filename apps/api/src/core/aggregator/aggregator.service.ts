@@ -1,14 +1,13 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, Reflector } from '@nestjs/core';
-import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
-
 import { AGENCY_METADATA } from '../../agencies/_contract/agency.decorator';
 import type {
   AgencyAdapter,
   FetchContext,
 } from '../../agencies/_contract/agency-adapter.interface';
-import { DRIZZLE, type Db } from '../../infrastructure/database/database.module';
+import { type Db, DRIZZLE } from '../../infrastructure/database/database.module';
 import { aggregationRuns } from '../../infrastructure/database/schema';
 import { WineService } from '../wine/wine.service';
 

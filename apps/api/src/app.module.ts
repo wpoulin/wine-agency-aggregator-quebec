@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
-
+// Agencies — adding a new one is one import.
+import { AboireDeboutModule } from './agencies/a-boire-debout/a-boire-debout.module';
+import { LaQvModule } from './agencies/la-qv/la-qv.module';
+import { Les2RaisinsModule } from './agencies/les-2-raisins/les-2-raisins.module';
 import { ApiModule } from './api/api.module';
 import { AppConfigModule } from './config/config.module';
 import { AggregatorModule } from './core/aggregator/aggregator.module';
@@ -11,11 +14,6 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { HttpModule } from './infrastructure/http/http.module';
 import { PdfModule } from './infrastructure/pdf/pdf.module';
 import { ScrapingModule } from './infrastructure/scraping/scraping.module';
-
-// Agencies — adding a new one is one import.
-import { AboireDeboutModule } from './agencies/a-boire-debout/a-boire-debout.module';
-import { LaQvModule } from './agencies/la-qv/la-qv.module';
-import { Les2RaisinsModule } from './agencies/les-2-raisins/les-2-raisins.module';
 
 @Module({
   imports: [

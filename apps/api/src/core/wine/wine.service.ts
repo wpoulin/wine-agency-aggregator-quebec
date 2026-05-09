@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { NormalizedWine } from '@wine/types';
 
-import { WineRepository, type WineFilter } from './wine.repository';
+import { type WineFilter, WineRepository } from './wine.repository';
 
 @Injectable()
 export class WineService {

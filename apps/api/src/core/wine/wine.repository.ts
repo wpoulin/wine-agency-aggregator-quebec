@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { NormalizedWine } from '@wine/types';
 import { and, eq, ilike, sql } from 'drizzle-orm';
 
-import { DRIZZLE, type Db } from '../../infrastructure/database/database.module';
+import { type Db, DRIZZLE } from '../../infrastructure/database/database.module';
 import { wines } from '../../infrastructure/database/schema';
 
 export interface WineFilter {

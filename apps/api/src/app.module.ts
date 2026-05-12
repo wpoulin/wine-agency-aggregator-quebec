@@ -5,6 +5,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { AboireDeboutModule } from './agencies/a-boire-debout/a-boire-debout.module';
 import { LaQvModule } from './agencies/la-qv/la-qv.module';
 import { Les2RaisinsModule } from './agencies/les-2-raisins/les-2-raisins.module';
+import { NobleSelectionModule } from './agencies/noble-selection/noble-selection.module';
 import { ApiModule } from './api/api.module';
 import { AppConfigModule } from './config/config.module';
 import { AggregatorModule } from './core/aggregator/aggregator.module';
@@ -42,6 +43,7 @@ import { ScrapingModule } from './infrastructure/scraping/scraping.module';
     AboireDeboutModule,
     LaQvModule,
     Les2RaisinsModule,
+    NobleSelectionModule,
   ],
 })
 export class AppModule {}
